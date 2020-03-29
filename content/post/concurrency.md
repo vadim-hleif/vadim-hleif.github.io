@@ -47,7 +47,50 @@ AND version = 2
 WHERE id = 1
   AND version = 1
 ```
-And when it will network access to some webservice - retry can be co costly
+And when it will network access to some webservice or database call - optimistic lock can be so costly.
+
+Also to implement optimistic lock won't be so easy, if speak about more complex sample 
+
+```java
+public class LinkedQueue<E> {
+
+  private AtomicReference<Node<E>> tail
+      = new AtomicReference<>(new Node<E>(null, null));
+
+  public boolean put(E item) {
+    Node<E> newNode = new Node<>(item, null);
+
+    while (true) {
+      Node<E> current = tail.get();
+      Node<E> next = current.next.get();
+
+      if (current == tail.get()) {
+        if (next == null) /* A */ {
+          if (current.next.compareAndSet(null, newNode)) /* C */ {
+            tail.compareAndSet(current, newNode) /* D */;
+            return true;
+          }
+        } else {
+          tail.compareAndSet(current, next) /* B */;
+        }
+      }
+    }
+  }
+```
+
+#### 2. Pessimistic lock
+
+Another way is locking resources or synchronize parallel access. There are few new terms:
+* Semaphore - counter which controls count of threads which can have access to resource
+* Mutex - semaphore with initial value **1**
+* Monitor - entity which provides high level API for synchronization, implemented over semaphore. Example in java 
+is keyword **synchronized**
+
+So synchronization is a way to ordered access to resources - when one thread use some resource, 
+others can't do anything with it. Every object in Java has personal mutex, so when we use keyword **synchronized** on some object method,
+we use monitor which locks current object and others methods with **synchronized** keyword can't be called while method is working.
+
+****
 
 Under high contention -- when many threads are pounding on a single memory location -- lock-based algorithms start to offer better throughput than nonblocking ones because when a thread blocks, it stops pounding and patiently waits its turn, avoiding further contention.
 
@@ -64,23 +107,9 @@ aba может возникнуть из-за каких-нибудь сайд �
 
 Сложный кейс, когда надо сделать две операции:
 
-Для счетчика или стека (когда надо обновить только одно значение) реализация неблокирующей синхронизации простая, но, когда надо обновить несколько значений реализация значительно усложняется - как например в листинге ниже.
-
-Решается благодаря тому, что другой поток знает, как перевести текущее состояние очереди из незавершенного состояния, оставленного другим потоком (после выполнения C и до выполнения D) в завершенное (B == D). 
-
- 
-
-✓	lock without thread sleep (все ждут пока счетчик не станет равен 0)
- 
- 
-
 
 Optimistic lock vs pessimistic lock
 https://stackoverflow.com/a/58952004/10758502
-
-тоже самое как в CAS – меняем только если видим версию, которую мы ожидаем, может быть хуже, когда параллельных запросов очень много, часто случаются ошибки и приходится откатывать много действий – тогда pessimistic (с локами) будет лучше по производительности.
-
-
 
 
 

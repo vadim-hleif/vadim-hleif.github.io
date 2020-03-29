@@ -1,5 +1,4 @@
 ---
-title: "Personal tech blog"
-description: "work in progress"
+title: "Tech blog"
+description: "Follow the evidence wherever it leads, and question everything."
 ---
-Welcome to my blog with some tech articles.
