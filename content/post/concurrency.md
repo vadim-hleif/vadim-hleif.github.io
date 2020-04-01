@@ -10,7 +10,7 @@ There are two options to deal with concurrency
 ****
 #### 1. Optimistic lock
 
-In this strategy, you will try to save record only when previous state as you expected.
+In this strategy, you will try to save record when previous state of the record as you expected.
 
 Example: 
 
@@ -35,10 +35,10 @@ public void transfer(Account source, Account target, int amount) {
 ```
 > AtomicInteger has **getAndAdd** method, code above only simple example.
 
-It's so easy -- we try to set new balance only when previous one didn't change. And if balance changed after **A** part and
-before **B** part **compareAndSet** doesn't change anything, returns false and cycle will try again and again until success.
-There is one possible overhead -- calculating new value every time after failure. If we will speak about real applications
-with microservices and database approach is the same -- try to save only when there aren't any changes:
+It's so easy -- we try to set new balance only when previous one hasn't changed. And if balance has changed after **A** part and
+before **B** part **compareAndSet** won't change anything, will return false and cycle will try again and again until success.
+There is one possible overhead -- calculating new value every time after failure. If we speak about real applications
+with microservices and database approach will be the same -- try to save only when there aren't changes:
 
 ```sql
 UPDATE account
@@ -47,9 +47,9 @@ AND version = 2
 WHERE id = 1
   AND version = 1
 ```
-And when it will network access to some webservice or database call - optimistic lock can be so costly.
+And when it is network access to some webservice or database call - optimistic lock can be so costly.
 
-Also to implement optimistic lock won't be so easy, if speak about more complex sample 
+Also to implement optimistic lock won't be so easy, if speak about more complex sample:
 
 ```java
 public class LinkedQueue<E> {
@@ -78,6 +78,11 @@ public class LinkedQueue<E> {
   }
 ```
 
+So, here is more complex case with double-variable needed synchronization - **tail** and reference from previous node **next**.
+There is one possible problem - when we changed next link **C** but didn't change tail **D**, in other word - full operation isn't complete.
+To avoid this problem there is additional check - **A**, when current thread detect, that another thread currently is working, current thread will help to finish operation -
+**B**. Code from **B** does the same thing as code in **D**, so any other thread can help with finishing current operation and then try to do his operation.
+
 #### 2. Pessimistic lock
 
 Another way is locking resources or synchronize parallel access. There are few new terms:
@@ -87,8 +92,37 @@ Another way is locking resources or synchronize parallel access. There are few n
 is keyword **synchronized**
 
 So synchronization is a way to ordered access to resources - when one thread use some resource, 
-others can't do anything with it. Every object in Java has personal mutex, so when we use keyword **synchronized** on some object method,
+others can't do anything with resource. Every object in Java has personal mutex, so when we use keyword **synchronized** on some object method,
 we use monitor which locks current object and others methods with **synchronized** keyword can't be called while method is working.
+
+If try to use such approach in money transfer case we will have one problem - possible deadlock. It will happen when some thread tries to transfer
+from **first** to **second**, and another tries to transfer from **second** to **first**.
+
+```java
+public void transfer(Account source, Account target, int amount) {
+  synchronized (source) {
+    synchronized (target) {
+      source.setMoney(source.getMoney() - amount);
+      target.setMoney(target.getMoney() + amount);
+    }
+  }
+}
+```
+To avoid this problem we can use something, which will guarantee the order - sort account by some fields, for example id.
+```java
+public void transfer(Account source, Account target, int amount) {
+  Account first = source.getId() < target.getId() ? source : target;
+  Account second = source.getId() < target.getId() ? target : source;
+  synchronized (first) {
+    synchronized (second) {
+      source.setMoney(source.getMoney() - amount);
+      target.setMoney(target.getMoney() + amount);
+    }
+  }
+}
+```
+
+
 
 ****
 
