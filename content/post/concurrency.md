@@ -1,5 +1,5 @@
 ---
-date: 2020-03-26
+date: 2020-04-02
 title: "Concurrency in Java"
 ---
 Let's talk about concurrency in java.
@@ -14,7 +14,7 @@ In this strategy, you will try to save record when previous state of the record 
 
 Example: 
 
-CAS -- compare and swap or compare and set. Processor instruction which guarantees reading, comparing and writing as atomic operation. 
+**CAS** -- compare and swap or compare and set. Processor instruction which guarantees reading, comparing and writing as atomic operation. 
 
 ```java
  variable.cas(expectedValue, newValue)
@@ -47,7 +47,7 @@ AND version = 2
 WHERE id = 1
   AND version = 1
 ```
-And when it is network access to some webservice or database call - optimistic lock can be so costly.
+And when it is network access to some web service or database call - retry in optimistic lock can be so costly.
 
 Also to implement optimistic lock won't be so easy, if speak about more complex sample:
 
@@ -93,7 +93,7 @@ is keyword **synchronized**
 
 So synchronization is a way to ordered access to resources - when one thread use some resource, 
 others can't do anything with resource. Every object in Java has personal mutex, so when we use keyword **synchronized** on some object method,
-we use monitor which locks current object and others methods with **synchronized** keyword can't be called while method is working.
+we use monitor which locks current object and all methods with **synchronized** keyword can't be called while method is working.
 
 If try to use such approach in money transfer case we will have one problem - possible deadlock. It will happen when some thread tries to transfer
 from **first** to **second**, and another tries to transfer from **second** to **first**.
@@ -122,59 +122,14 @@ public void transfer(Account source, Account target, int amount) {
 }
 ```
 
+#### 3. Which is better?
 
+There isn’t rule like Amdahl’s Law which will guarantee the better option.
+Under high contention -- lock-based algorithms can offer better performance, in some cases - non blocking algorithms are better.
+But there aren't any digits - just empirical way
 
 ****
-
-Under high contention -- when many threads are pounding on a single memory location -- lock-based algorithms start to offer better throughput than nonblocking ones because when a thread blocks, it stops pounding and patiently waits its turn, avoiding further contention.
-
-
-Источники:
-•	https://www.ibm.com/developerworks/java/library/j-jtp11234/
-•	https://www.ibm.com/developerworks/java/library/j-jtp10264/
-•	https://www.ibm.com/developerworks/java/library/j-jtp04186/
-
-углубление:
-Amdahl’s Law. 1 / (F+ ((1-F)/n)). https://ru.wikipedia.org/wiki/Закон_Амдала
-aba problem https://en.wikipedia.org/wiki/ABA_problem
-aba может возникнуть из-за каких-нибудь сайд эффектов помимо просто изменения значения с B -> A 
-
-Сложный кейс, когда надо сделать две операции:
-
-
-Optimistic lock vs pessimistic lock
-https://stackoverflow.com/a/58952004/10758502
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-✓	algorithms cost and sort
-
-https://ru.wikipedia.org/wiki/Быстрая_сортировка
-https://www.daniweb.com/programming/computer-science/threads/13488/time-complexity-of-algorithm
-
-лучший алгоритм, используется в jdk для сортировки. Вообще “лучшего” алгоритма не существует, все зависит от входных данных – e.g.
-
-The time complexity of Quicksort is O(n log n) in the best case, O(n log n)in the average case, and O(n^2) in the worst case. But because it has the best performance in the average case for most inputs, Quicksort is generally considered the “fastest” sorting algorithm. 
-
-            
-Основание у log не пишут, так как от него не зависит во сколько раз станет выше сложность.
-
-O(n log n)  - при маленьких значениях видно, O(n) легче, при больших наоборот. 
-O(log n)     - видно что величина прироста постоянна (бинарный поиск пример)
+#### Links:
+- https://www.ibm.com/developerworks/java/library/j-jtp11234/
+- https://www.ibm.com/developerworks/java/library/j-jtp10264/
+- https://www.ibm.com/developerworks/java/library/j-jtp04186/
