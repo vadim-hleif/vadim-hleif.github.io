@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    
+    <title>Vadim Hleif  | Concurrency in Java</title>
+    <meta name="viewport" content="width=device-width,minimum-scale=1">
+    <meta name="generator" content="Hugo 0.68.1" />
+    
+    
+      <META NAME="ROBOTS" CONTENT="NOINDEX, NOFOLLOW">
+    
+
+    
+    
+      <link href="/dist/css/app.1cb140d8ba31d5b2f1114537dd04802a.css" rel="stylesheet">
+    
+
+    
+
+    
+      
+    
+
+    
+    
+    <meta property="og:title" content="Concurrency in Java" />
+<meta property="og:description" content="Let&rsquo;s talk about concurrency in java. There are two options to deal with concurrency
+ Optimistic lock Pessimistic lock   1. Optimistic lock In this strategy, you will try to save record when previous state of the record as you expected.
+Example:
+CAS &ndash; compare and swap or compare and set. Processor instruction which guarantees reading, comparing and writing as atomic operation.
+variable.cas(expectedValue, newValue) Java has AtomicReference class for objects and also has similar wrappers for many primitives." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://vadim-hleif.github.io/post/concurrency/" />
+<meta property="article:published_time" content="2020-04-02T00:00:00+00:00" />
+<meta property="article:modified_time" content="2020-04-02T00:00:00+00:00" />
+<meta itemprop="name" content="Concurrency in Java">
+<meta itemprop="description" content="Let&rsquo;s talk about concurrency in java. There are two options to deal with concurrency
+ Optimistic lock Pessimistic lock   1. Optimistic lock In this strategy, you will try to save record when previous state of the record as you expected.
+Example:
+CAS &ndash; compare and swap or compare and set. Processor instruction which guarantees reading, comparing and writing as atomic operation.
+variable.cas(expectedValue, newValue) Java has AtomicReference class for objects and also has similar wrappers for many primitives.">
+<meta itemprop="datePublished" content="2020-04-02T00:00:00&#43;00:00" />
+<meta itemprop="dateModified" content="2020-04-02T00:00:00&#43;00:00" />
+<meta itemprop="wordCount" content="743">
+
+
+
+<meta itemprop="keywords" content="" /><meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Concurrency in Java"/>
+<meta name="twitter:description" content="Let&rsquo;s talk about concurrency in java. There are two options to deal with concurrency
+ Optimistic lock Pessimistic lock   1. Optimistic lock In this strategy, you will try to save record when previous state of the record as you expected.
+Example:
+CAS &ndash; compare and swap or compare and set. Processor instruction which guarantees reading, comparing and writing as atomic operation.
+variable.cas(expectedValue, newValue) Java has AtomicReference class for objects and also has similar wrappers for many primitives."/>
+
+  </head>
+
+  <body class="ma0 avenir bg-near-white">
+
+    
+   
+  
+
+  <header>
+    <div class="bg-black">
+      <nav class="pv3 ph3 ph4-ns" role="navigation">
+  <div class="flex-l justify-between items-center center">
+    <a href="https://vadim-hleif.github.io" class="f3 fw2 hover-white no-underline white-90 dib">
+      Vadim Hleif
+    </a>
+    <div class="flex-l items-center">
+      
+
+      
+        <ul class="pl0 mr3">
+          
+          <li class="list f5 f4-ns fw4 dib pr3">
+            <a class="hover-white no-underline white-90" href="/about/" title=" page">
+              
+            </a>
+          </li>
+          
+          <li class="list f5 f4-ns fw4 dib pr3">
+            <a class="hover-white no-underline white-90" href="/post/" title="Posts page">
+              Posts
+            </a>
+          </li>
+          
+        </ul>
+      
+      
+
+
+
+
+
+
+
+
+<a href="https://github.com/vadim-hleif" target="_blank" class="link-transition github link dib z-999 pt3 pt0-l mr1" title="Github link" rel="noopener" aria-label="follow on Github——Opens in a new window">
+  <svg  height="32px"  style="enable-background:new 0 0 512 512;" version="1.1" viewBox="0 0 512 512" width="32px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+  <path d="M256,32C132.3,32,32,134.8,32,261.7c0,101.5,64.2,187.5,153.2,217.9c11.2,2.1,15.3-5,15.3-11.1   c0-5.5-0.2-19.9-0.3-39.1c-62.3,13.9-75.5-30.8-75.5-30.8c-10.2-26.5-24.9-33.6-24.9-33.6c-20.3-14.3,1.5-14,1.5-14   c22.5,1.6,34.3,23.7,34.3,23.7c20,35.1,52.4,25,65.2,19.1c2-14.8,7.8-25,14.2-30.7c-49.7-5.8-102-25.5-102-113.5   c0-25.1,8.7-45.6,23-61.6c-2.3-5.8-10-29.2,2.2-60.8c0,0,18.8-6.2,61.6,23.5c17.9-5.1,37-7.6,56.1-7.7c19,0.1,38.2,2.6,56.1,7.7   c42.8-29.7,61.5-23.5,61.5-23.5c12.2,31.6,4.5,55,2.2,60.8c14.3,16.1,23,36.6,23,61.6c0,88.2-52.4,107.6-102.3,113.3   c8,7.1,15.2,21.1,15.2,42.5c0,30.7-0.3,55.5-0.3,63c0,6.1,4,13.3,15.4,11C415.9,449.1,480,363.1,480,261.7   C480,134.8,379.7,32,256,32z"/>
+</svg>
+
+<span class="new-window"><svg  height="8px"  style="enable-background:new 0 0 1000 1000;" version="1.1" viewBox="0 0 1000 1000" width="8px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+<path d="M598 128h298v298h-86v-152l-418 418-60-60 418-418h-152v-86zM810 810v-298h86v298c0 46-40 86-86 86h-596c-48 0-86-40-86-86v-596c0-46 38-86 86-86h298v86h-298v596h596z" style="fill-rule:evenodd;clip-rule:evenodd;fill:;"/>
+</svg>
+</span></a>
+
+
+
+
+
+
+
+    </div>
+  </div>
+</nav>
+
+    </div>
+  </header>
+
+
+
+    <main class="pb7" role="main">
+      
+  
+  <article class="flex-l flex-wrap justify-between mw8 center ph3">
+    <header class="mt4 w-100">
+      <aside class="instapaper_ignoref b helvetica tracked">
+          
+        POSTS
+      </aside>
+      
+
+
+
+
+  <div id="sharing" class="mt3">
+
+    
+    <a href="https://www.facebook.com/sharer.php?u=https://vadim-hleif.github.io/post/concurrency/" class="facebook no-underline" aria-label="share on Facebook">
+      <svg height="32px"  style="enable-background:new 0 0 67 67;" version="1.1" viewBox="0 0 67 67" width="32px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M28.765,50.32h6.744V33.998h4.499l0.596-5.624h-5.095  l0.007-2.816c0-1.466,0.14-2.253,2.244-2.253h2.812V17.68h-4.5c-5.405,0-7.307,2.729-7.307,7.317v3.377h-3.369v5.625h3.369V50.32z   M33,64C16.432,64,3,50.569,3,34S16.432,4,33,4s30,13.431,30,30S49.568,64,33,64z" style="fill-rule:evenodd;clip-rule:evenodd;"/></svg>
+
+    </a>
+
+    
+    
+    <a href="https://twitter.com/share?url=https://vadim-hleif.github.io/post/concurrency/&amp;text=Concurrency%20in%20Java" class="twitter no-underline" aria-label="share on Twitter">
+      <svg height="32px"  style="enable-background:new 0 0 67 67;" version="1.1" viewBox="0 0 67 67" width="32px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path d="M37.167,22.283c-2.619,0.953-4.274,3.411-4.086,6.101  l0.063,1.038l-1.048-0.127c-3.813-0.487-7.145-2.139-9.974-4.915l-1.383-1.377l-0.356,1.017c-0.754,2.267-0.272,4.661,1.299,6.271  c0.838,0.89,0.649,1.017-0.796,0.487c-0.503-0.169-0.943-0.296-0.985-0.233c-0.146,0.149,0.356,2.076,0.754,2.839  c0.545,1.06,1.655,2.097,2.871,2.712l1.027,0.487l-1.215,0.021c-1.173,0-1.215,0.021-1.089,0.467  c0.419,1.377,2.074,2.839,3.918,3.475l1.299,0.444l-1.131,0.678c-1.676,0.976-3.646,1.526-5.616,1.568  C19.775,43.256,19,43.341,19,43.405c0,0.211,2.557,1.397,4.044,1.864c4.463,1.377,9.765,0.783,13.746-1.568  c2.829-1.673,5.657-5,6.978-8.221c0.713-1.716,1.425-4.851,1.425-6.354c0-0.975,0.063-1.102,1.236-2.267  c0.692-0.678,1.341-1.419,1.467-1.631c0.21-0.403,0.188-0.403-0.88-0.043c-1.781,0.636-2.033,0.551-1.152-0.402  c0.649-0.678,1.425-1.907,1.425-2.267c0-0.063-0.314,0.042-0.671,0.233c-0.377,0.212-1.215,0.53-1.844,0.72l-1.131,0.361l-1.027-0.7  c-0.566-0.381-1.361-0.805-1.781-0.932C39.766,21.902,38.131,21.944,37.167,22.283z M33,64C16.432,64,3,50.569,3,34S16.432,4,33,4  s30,13.431,30,30S49.568,64,33,64z" style="fill-rule:evenodd;clip-rule:evenodd;fill:;"/></svg>
+
+    </a>
+
+    
+    <a href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https://vadim-hleif.github.io/post/concurrency/&amp;title=Concurrency%20in%20Java" class="linkedin no-underline" aria-label="share on LinkedIn">
+      <svg  height="32px"  style="enable-background:new 0 0 65 65;" version="1.1" viewBox="0 0 65 65" width="32px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <path d="M50.837,48.137V36.425c0-6.275-3.35-9.195-7.816-9.195  c-3.604,0-5.219,1.983-6.119,3.374V27.71h-6.79c0.09,1.917,0,20.427,0,20.427h6.79V36.729c0-0.609,0.044-1.219,0.224-1.655  c0.49-1.22,1.607-2.483,3.482-2.483c2.458,0,3.44,1.873,3.44,4.618v10.929H50.837z M22.959,24.922c2.367,0,3.842-1.57,3.842-3.531  c-0.044-2.003-1.475-3.528-3.797-3.528s-3.841,1.524-3.841,3.528c0,1.961,1.474,3.531,3.753,3.531H22.959z M34,64  C17.432,64,4,50.568,4,34C4,17.431,17.432,4,34,4s30,13.431,30,30C64,50.568,50.568,64,34,64z M26.354,48.137V27.71h-6.789v20.427  H26.354z" style="fill-rule:evenodd;clip-rule:evenodd;fill:;"/>
+</svg>
+
+    </a>
+  </div>
+
+      <h1 class="f1 athelas mt3 mb1">Concurrency in Java</h1>
+      
+      
+      <time class="f6 mv4 dib tracked" datetime="2020-04-02T00:00:00Z">April 2, 2020</time>
+
+      
+      
+    </header>
+    <div class="nested-copy-line-height lh-copy serif f4 nested-links nested-img mid-gray pr4-l w-two-thirds-l"><p>Let&rsquo;s talk about concurrency in java.
+There are two options to deal with concurrency</p>
+<ul>
+<li>Optimistic lock</li>
+<li>Pessimistic lock</li>
+</ul>
+<hr>
+<h4 id="1-optimistic-lock">1. Optimistic lock</h4>
+<p>In this strategy, you will try to save record when previous state of the record as you expected.</p>
+<p>Example:</p>
+<p><strong>CAS</strong> &ndash; compare and swap or compare and set. Processor instruction which guarantees reading, comparing and writing as atomic operation.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"> variable<span style="color:#f92672">.</span><span style="color:#a6e22e">cas</span><span style="color:#f92672">(</span>expectedValue<span style="color:#f92672">,</span> newValue<span style="color:#f92672">)</span>
+</code></pre></div><p>Java has AtomicReference class for objects and also has similar wrappers for many primitives.</p>
+<p>Popular example with money transfer:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">transfer</span><span style="color:#f92672">(</span>Account source<span style="color:#f92672">,</span> Account target<span style="color:#f92672">,</span> <span style="color:#66d9ef">int</span> amount<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+    <span style="color:#66d9ef">int</span> money<span style="color:#f92672">;</span>
+    <span style="color:#66d9ef">do</span> <span style="color:#f92672">{</span>
+        <span style="color:#75715e">//A: get value from AtomicInteger
+</span><span style="color:#75715e"></span>        money <span style="color:#f92672">=</span> source<span style="color:#f92672">.</span><span style="color:#a6e22e">getMoney</span><span style="color:#f92672">().</span><span style="color:#a6e22e">get</span><span style="color:#f92672">();</span> 
+    <span style="color:#f92672">}</span>
+    <span style="color:#75715e">//B: code tries to set new value only if there aren&#39;t any changes 
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">while</span> <span style="color:#f92672">(</span>source<span style="color:#f92672">.</span><span style="color:#a6e22e">getMoney</span><span style="color:#f92672">().</span><span style="color:#a6e22e">compareAndSet</span><span style="color:#f92672">(</span>money<span style="color:#f92672">,</span> money <span style="color:#f92672">-</span> amount<span style="color:#f92672">));</span> 
+</code></pre></div><blockquote>
+<p>AtomicInteger has <strong>getAndAdd</strong> method, code above is only a simple example.</p>
+</blockquote>
+<p>It&rsquo;s so easy &ndash; we try to set new balance only when previous one hasn&rsquo;t changed. And if balance has changed after <strong>A</strong> part and
+before <strong>B</strong> part <strong>compareAndSet</strong> won&rsquo;t change anything, will return false and cycle will try again and again until success.
+There is one possible overhead &ndash; calculating new value every time after failure. If we speak about real applications
+with microservices and database approach will be the same &ndash; try to save only when there are no changes:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">UPDATE</span> account
+<span style="color:#66d9ef">SET</span> amount <span style="color:#f92672">=</span> amount <span style="color:#f92672">-</span> <span style="color:#ae81ff">100</span>
+<span style="color:#66d9ef">AND</span> <span style="color:#66d9ef">version</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">2</span>
+<span style="color:#66d9ef">WHERE</span> id <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>
+  <span style="color:#66d9ef">AND</span> <span style="color:#66d9ef">version</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>
+</code></pre></div><p>And when it is network access to some web service or database call - retry in optimistic lock can be so costly.</p>
+<p>Also it won&rsquo;t be so easy to implement optimistic lock, if to speak about more complex sample:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">LinkedQueue</span><span style="color:#f92672">&lt;</span>E<span style="color:#f92672">&gt;</span> <span style="color:#f92672">{</span>
+
+  <span style="color:#66d9ef">private</span> AtomicReference<span style="color:#f92672">&lt;</span>Node<span style="color:#f92672">&lt;</span>E<span style="color:#f92672">&gt;&gt;</span> tail
+      <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> AtomicReference<span style="color:#f92672">&lt;&gt;(</span><span style="color:#66d9ef">new</span> Node<span style="color:#f92672">&lt;</span>E<span style="color:#f92672">&gt;(</span><span style="color:#66d9ef">null</span><span style="color:#f92672">,</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">));</span>
+
+  <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">boolean</span> <span style="color:#a6e22e">put</span><span style="color:#f92672">(</span>E item<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+    Node<span style="color:#f92672">&lt;</span>E<span style="color:#f92672">&gt;</span> newNode <span style="color:#f92672">=</span> <span style="color:#66d9ef">new</span> Node<span style="color:#f92672">&lt;&gt;(</span>item<span style="color:#f92672">,</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">);</span>
+
+    <span style="color:#66d9ef">while</span> <span style="color:#f92672">(</span><span style="color:#66d9ef">true</span><span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+      Node<span style="color:#f92672">&lt;</span>E<span style="color:#f92672">&gt;</span> current <span style="color:#f92672">=</span> tail<span style="color:#f92672">.</span><span style="color:#a6e22e">get</span><span style="color:#f92672">();</span>
+      Node<span style="color:#f92672">&lt;</span>E<span style="color:#f92672">&gt;</span> next <span style="color:#f92672">=</span> current<span style="color:#f92672">.</span><span style="color:#a6e22e">next</span><span style="color:#f92672">.</span><span style="color:#a6e22e">get</span><span style="color:#f92672">();</span>
+
+      <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>current <span style="color:#f92672">==</span> tail<span style="color:#f92672">.</span><span style="color:#a6e22e">get</span><span style="color:#f92672">())</span> <span style="color:#f92672">{</span>
+        <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>next <span style="color:#f92672">==</span> <span style="color:#66d9ef">null</span><span style="color:#f92672">)</span> <span style="color:#75715e">/* A */</span> <span style="color:#f92672">{</span>
+          <span style="color:#66d9ef">if</span> <span style="color:#f92672">(</span>current<span style="color:#f92672">.</span><span style="color:#a6e22e">next</span><span style="color:#f92672">.</span><span style="color:#a6e22e">compareAndSet</span><span style="color:#f92672">(</span><span style="color:#66d9ef">null</span><span style="color:#f92672">,</span> newNode<span style="color:#f92672">))</span> <span style="color:#75715e">/* C */</span> <span style="color:#f92672">{</span>
+            tail<span style="color:#f92672">.</span><span style="color:#a6e22e">compareAndSet</span><span style="color:#f92672">(</span>current<span style="color:#f92672">,</span> newNode<span style="color:#f92672">)</span> <span style="color:#75715e">/* D */</span><span style="color:#f92672">;</span>
+            <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">true</span><span style="color:#f92672">;</span>
+          <span style="color:#f92672">}</span>
+        <span style="color:#f92672">}</span> <span style="color:#66d9ef">else</span> <span style="color:#f92672">{</span>
+          tail<span style="color:#f92672">.</span><span style="color:#a6e22e">compareAndSet</span><span style="color:#f92672">(</span>current<span style="color:#f92672">,</span> next<span style="color:#f92672">)</span> <span style="color:#75715e">/* B */</span><span style="color:#f92672">;</span>
+        <span style="color:#f92672">}</span>
+      <span style="color:#f92672">}</span>
+    <span style="color:#f92672">}</span>
+  <span style="color:#f92672">}</span>
+</code></pre></div><p>So, here is more complex case with double-variable needed synchronization - <strong>tail</strong> and reference from previous node <strong>next</strong>.
+There is one possible problem - when we changed next link <strong>C</strong> but didn&rsquo;t change tail <strong>D</strong>, in other words - full operation isn&rsquo;t completed.
+To avoid this problem there is additional check - <strong>A</strong>, when current thread detect, that another thread currently is working, current thread will help to finish operation -
+<strong>B</strong>. Code from <strong>B</strong> does the same thing as code in <strong>D</strong>, so any other thread can help with finishing current operation and then try to do its operation.</p>
+<h4 id="2-pessimistic-lock">2. Pessimistic lock</h4>
+<p>Another way is locking resources or synchronizing parallel access. There are a few new terms:</p>
+<ul>
+<li>Semaphore - counter which controls count of threads which can have access to resource</li>
+<li>Mutex - semaphore with initial value <strong>1</strong></li>
+<li>Monitor - entity which provides high level API for synchronization, implemented over semaphore. Example in java
+is keyword <strong>synchronized</strong></li>
+</ul>
+<p>So synchronization is a way to ordered access to resources - when one thread use some resource,
+others can&rsquo;t do anything with resource. Every object in Java has personal mutex, so when we use keyword <strong>synchronized</strong> on some object method,
+we use monitor which locks current object and all methods with <strong>synchronized</strong> keyword can&rsquo;t be called while method is working.</p>
+<p>If try to use such approach in money transfer case we will have one problem - possible deadlock. It will happen when some thread tries to transfer
+from <strong>first</strong> to <strong>second</strong>, and another tries to transfer from <strong>second</strong> to <strong>first</strong>.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">transfer</span><span style="color:#f92672">(</span>Account source<span style="color:#f92672">,</span> Account target<span style="color:#f92672">,</span> <span style="color:#66d9ef">int</span> amount<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+  <span style="color:#66d9ef">synchronized</span> <span style="color:#f92672">(</span>source<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+    <span style="color:#66d9ef">synchronized</span> <span style="color:#f92672">(</span>target<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+      source<span style="color:#f92672">.</span><span style="color:#a6e22e">setMoney</span><span style="color:#f92672">(</span>source<span style="color:#f92672">.</span><span style="color:#a6e22e">getMoney</span><span style="color:#f92672">()</span> <span style="color:#f92672">-</span> amount<span style="color:#f92672">);</span>
+      target<span style="color:#f92672">.</span><span style="color:#a6e22e">setMoney</span><span style="color:#f92672">(</span>target<span style="color:#f92672">.</span><span style="color:#a6e22e">getMoney</span><span style="color:#f92672">()</span> <span style="color:#f92672">+</span> amount<span style="color:#f92672">);</span>
+    <span style="color:#f92672">}</span>
+  <span style="color:#f92672">}</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><p>To avoid this problem we can use something, which will guarantee the order - sort account by some fields, for example id.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-java" data-lang="java"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">transfer</span><span style="color:#f92672">(</span>Account source<span style="color:#f92672">,</span> Account target<span style="color:#f92672">,</span> <span style="color:#66d9ef">int</span> amount<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+  Account first <span style="color:#f92672">=</span> source<span style="color:#f92672">.</span><span style="color:#a6e22e">getId</span><span style="color:#f92672">()</span> <span style="color:#f92672">&lt;</span> target<span style="color:#f92672">.</span><span style="color:#a6e22e">getId</span><span style="color:#f92672">()</span> <span style="color:#f92672">?</span> source <span style="color:#f92672">:</span> target<span style="color:#f92672">;</span>
+  Account second <span style="color:#f92672">=</span> source<span style="color:#f92672">.</span><span style="color:#a6e22e">getId</span><span style="color:#f92672">()</span> <span style="color:#f92672">&lt;</span> target<span style="color:#f92672">.</span><span style="color:#a6e22e">getId</span><span style="color:#f92672">()</span> <span style="color:#f92672">?</span> target <span style="color:#f92672">:</span> source<span style="color:#f92672">;</span>
+  <span style="color:#66d9ef">synchronized</span> <span style="color:#f92672">(</span>first<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+    <span style="color:#66d9ef">synchronized</span> <span style="color:#f92672">(</span>second<span style="color:#f92672">)</span> <span style="color:#f92672">{</span>
+      source<span style="color:#f92672">.</span><span style="color:#a6e22e">setMoney</span><span style="color:#f92672">(</span>source<span style="color:#f92672">.</span><span style="color:#a6e22e">getMoney</span><span style="color:#f92672">()</span> <span style="color:#f92672">-</span> amount<span style="color:#f92672">);</span>
+      target<span style="color:#f92672">.</span><span style="color:#a6e22e">setMoney</span><span style="color:#f92672">(</span>target<span style="color:#f92672">.</span><span style="color:#a6e22e">getMoney</span><span style="color:#f92672">()</span> <span style="color:#f92672">+</span> amount<span style="color:#f92672">);</span>
+    <span style="color:#f92672">}</span>
+  <span style="color:#f92672">}</span>
+<span style="color:#f92672">}</span>
+</code></pre></div><h4 id="3-which-is-better">3. Which is better?</h4>
+<p>There isn’t rule like Amdahl’s Law which will guarantee the better option.
+Under high contention &ndash; lock-based algorithms can offer better performance, in some cases - non blocking algorithms are better.
+But there aren&rsquo;t any digits - just empirical way</p>
+<hr>
+<h4 id="links">Links:</h4>
+<ul>
+<li><a href="https://www.ibm.com/developerworks/java/library/j-jtp11234/">https://www.ibm.com/developerworks/java/library/j-jtp11234/</a></li>
+<li><a href="https://www.ibm.com/developerworks/java/library/j-jtp10264/">https://www.ibm.com/developerworks/java/library/j-jtp10264/</a></li>
+<li><a href="https://www.ibm.com/developerworks/java/library/j-jtp04186/">https://www.ibm.com/developerworks/java/library/j-jtp04186/</a></li>
+</ul>
+<ul class="pa0">
+  
+</ul>
+<div class="mt6 instapaper_ignoref">
+      
+      
+      </div>
+    </div>
+
+    <aside class="w-30-l mt6-l">
+
+
+
+
+</aside>
+
+  </article>
+
+    </main>
+    <footer class="bg-black bottom-0 w-100 pa3" role="contentinfo">
+  <div class="flex justify-between">
+  <a class="f4 fw4 hover-white no-underline white-70 dn dib-ns pv2 ph3" href="https://vadim-hleif.github.io" >
+    &copy;  Vadim Hleif 2020 
+  </a>
+    <div>
+
+
+
+
+
+
+
+
+<a href="https://github.com/vadim-hleif" target="_blank" class="link-transition github link dib z-999 pt3 pt0-l mr1" title="Github link" rel="noopener" aria-label="follow on Github——Opens in a new window">
+  <svg  height="32px"  style="enable-background:new 0 0 512 512;" version="1.1" viewBox="0 0 512 512" width="32px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+  <path d="M256,32C132.3,32,32,134.8,32,261.7c0,101.5,64.2,187.5,153.2,217.9c11.2,2.1,15.3-5,15.3-11.1   c0-5.5-0.2-19.9-0.3-39.1c-62.3,13.9-75.5-30.8-75.5-30.8c-10.2-26.5-24.9-33.6-24.9-33.6c-20.3-14.3,1.5-14,1.5-14   c22.5,1.6,34.3,23.7,34.3,23.7c20,35.1,52.4,25,65.2,19.1c2-14.8,7.8-25,14.2-30.7c-49.7-5.8-102-25.5-102-113.5   c0-25.1,8.7-45.6,23-61.6c-2.3-5.8-10-29.2,2.2-60.8c0,0,18.8-6.2,61.6,23.5c17.9-5.1,37-7.6,56.1-7.7c19,0.1,38.2,2.6,56.1,7.7   c42.8-29.7,61.5-23.5,61.5-23.5c12.2,31.6,4.5,55,2.2,60.8c14.3,16.1,23,36.6,23,61.6c0,88.2-52.4,107.6-102.3,113.3   c8,7.1,15.2,21.1,15.2,42.5c0,30.7-0.3,55.5-0.3,63c0,6.1,4,13.3,15.4,11C415.9,449.1,480,363.1,480,261.7   C480,134.8,379.7,32,256,32z"/>
+</svg>
+
+<span class="new-window"><svg  height="8px"  style="enable-background:new 0 0 1000 1000;" version="1.1" viewBox="0 0 1000 1000" width="8px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" >
+<path d="M598 128h298v298h-86v-152l-418 418-60-60 418-418h-152v-86zM810 810v-298h86v298c0 46-40 86-86 86h-596c-48 0-86-40-86-86v-596c0-46 38-86 86-86h298v86h-298v596h596z" style="fill-rule:evenodd;clip-rule:evenodd;fill:;"/>
+</svg>
+</span></a>
+
+
+
+
+
+
+</div>
+  </div>
+</footer>
+
+    
+
+  <script src="/dist/js/app.3fc0f988d21662902933.js"></script>
+
+
+  </body>
+</html>
