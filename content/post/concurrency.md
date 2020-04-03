@@ -33,12 +33,12 @@ public void transfer(Account source, Account target, int amount) {
     //B: code tries to set new value only if there aren't any changes 
     while (source.getMoney().compareAndSet(money, money - amount)); 
 ```
-> AtomicInteger has **getAndAdd** method, code above only simple example.
+> AtomicInteger has **getAndAdd** method, code above is only a simple example.
 
 It's so easy -- we try to set new balance only when previous one hasn't changed. And if balance has changed after **A** part and
 before **B** part **compareAndSet** won't change anything, will return false and cycle will try again and again until success.
 There is one possible overhead -- calculating new value every time after failure. If we speak about real applications
-with microservices and database approach will be the same -- try to save only when there aren't changes:
+with microservices and database approach will be the same -- try to save only when there are no changes:
 
 ```sql
 UPDATE account
@@ -49,7 +49,7 @@ WHERE id = 1
 ```
 And when it is network access to some web service or database call - retry in optimistic lock can be so costly.
 
-Also to implement optimistic lock won't be so easy, if speak about more complex sample:
+Also it won't be so easy to implement optimistic lock, if to speak about more complex sample:
 
 ```java
 public class LinkedQueue<E> {
@@ -79,13 +79,13 @@ public class LinkedQueue<E> {
 ```
 
 So, here is more complex case with double-variable needed synchronization - **tail** and reference from previous node **next**.
-There is one possible problem - when we changed next link **C** but didn't change tail **D**, in other word - full operation isn't complete.
+There is one possible problem - when we changed next link **C** but didn't change tail **D**, in other words - full operation isn't completed.
 To avoid this problem there is additional check - **A**, when current thread detect, that another thread currently is working, current thread will help to finish operation -
-**B**. Code from **B** does the same thing as code in **D**, so any other thread can help with finishing current operation and then try to do his operation.
+**B**. Code from **B** does the same thing as code in **D**, so any other thread can help with finishing current operation and then try to do its operation.
 
 #### 2. Pessimistic lock
 
-Another way is locking resources or synchronize parallel access. There are few new terms:
+Another way is locking resources or synchronizing parallel access. There are a few new terms:
 * Semaphore - counter which controls count of threads which can have access to resource
 * Mutex - semaphore with initial value **1**
 * Monitor - entity which provides high level API for synchronization, implemented over semaphore. Example in java 
