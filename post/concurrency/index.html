@@ -6,7 +6,7 @@
     
     <title>Vadim Hleif  | Concurrency in Java</title>
     <meta name="viewport" content="width=device-width,minimum-scale=1">
-    <meta name="generator" content="Hugo 0.68.1" />
+    <meta name="generator" content="Hugo 0.68.3" />
     
     
       <META NAME="ROBOTS" CONTENT="NOINDEX, NOFOLLOW">
@@ -191,7 +191,7 @@ There are two options to deal with concurrency</p>
 </span><span style="color:#75715e"></span>        money <span style="color:#f92672">=</span> source<span style="color:#f92672">.</span><span style="color:#a6e22e">getMoney</span><span style="color:#f92672">().</span><span style="color:#a6e22e">get</span><span style="color:#f92672">();</span> 
     <span style="color:#f92672">}</span>
     <span style="color:#75715e">//B: code tries to set new value only if there aren&#39;t any changes 
-</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">while</span> <span style="color:#f92672">(</span>source<span style="color:#f92672">.</span><span style="color:#a6e22e">getMoney</span><span style="color:#f92672">().</span><span style="color:#a6e22e">compareAndSet</span><span style="color:#f92672">(</span>money<span style="color:#f92672">,</span> money <span style="color:#f92672">-</span> amount<span style="color:#f92672">));</span> 
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">while</span> <span style="color:#f92672">(!</span>source<span style="color:#f92672">.</span><span style="color:#a6e22e">getMoney</span><span style="color:#f92672">().</span><span style="color:#a6e22e">compareAndSet</span><span style="color:#f92672">(</span>money<span style="color:#f92672">,</span> money <span style="color:#f92672">-</span> amount<span style="color:#f92672">));</span> 
 </code></pre></div><blockquote>
 <p>AtomicInteger has <strong>getAndAdd</strong> method, code above is only a simple example.</p>
 </blockquote>
