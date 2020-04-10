@@ -31,7 +31,7 @@ public void transfer(Account source, Account target, int amount) {
         money = source.getMoney().get(); 
     }
     //B: code tries to set new value only if there aren't any changes 
-    while (source.getMoney().compareAndSet(money, money - amount)); 
+    while (!source.getMoney().compareAndSet(money, money - amount)); 
 ```
 > AtomicInteger has **getAndAdd** method, code above is only a simple example.
 
