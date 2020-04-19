@@ -24,14 +24,5 @@ CAS &amp;ndash; compare and swap or compare and set. Processor instruction which
 variable.cas(expectedValue, newValue) Java has AtomicReference class for objects and also has similar wrappers for many primitives.</description>
     </item>
     
-    <item>
-      <title>Java Classloaders</title>
-      <link>https://vadim-hleif.github.io/post/classloaders/</link>
-      <pubDate>Thu, 02 Apr 2020 00:00:00 +0000</pubDate>
-      
-      <guid>https://vadim-hleif.github.io/post/classloaders/</guid>
-      <description>Coming soon</description>
-    </item>
-    
   </channel>
 </rss>
